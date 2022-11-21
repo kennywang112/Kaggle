@@ -1,4 +1,5 @@
-# Kaggle notebooks Machine/Deep learning & EDA
+# Kaggle notebooks 
+### Machine/Deep learning & EDA
 > Heart failure with 6 models.
 
 > Netflix:EDA & separate function.
