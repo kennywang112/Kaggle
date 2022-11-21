@@ -1,2 +1,2 @@
-# Kaggle
-kaggle notebooks
+# Kaggle notebooks
+Machine/Deep learning & EDA
