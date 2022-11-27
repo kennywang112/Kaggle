@@ -4,6 +4,8 @@
 
 > Netflix:EDA & separate function.
 
-> Drug Classification with DT,NN models.
+> Drug classification with DT,NN models.
 
 > Humor Detection classification using LSTM 
+
+> Dog & Cat classification and Grad-CAM plot
