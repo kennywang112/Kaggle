@@ -1,11 +1,11 @@
 # Kaggle notebooks 
 ### Machine/Deep learning & EDA
-> Heart failure with 6 models.
+1. Heart failure with 6 models.
 
-> Netflix:EDA & separate function.
+2. Netflix:EDA & separate function.
 
-> Drug classification with DT,NN models.
+3. Drug classification with DT,NN models.
 
-> Humor Detection classification using LSTM 
+4. Humor Detection classification using LSTM 
 
-> Dog & Cat classification and Grad-CAM plot
+5. Dog & Cat classification and Grad-CAM plot
