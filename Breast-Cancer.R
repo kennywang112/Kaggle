@@ -5,6 +5,7 @@ library(reticulate)
 # install_tensorflow()
 
 data <- read_csv('C:/Users/USER/Desktop/KaggleData/breast-cancer-dataset.csv')%>%select(-`S/N`)
+data <- read_csv('../Kaggle_Data/breast-cancer-dataset.csv')%>%select(-`S/N`)
 data%>%colnames()
 data%>%head()
 data%>%dim()
@@ -79,6 +80,12 @@ case_data <- data%>%
   )
 case_data <- case_data[!grepl("#", case_data$History), , drop = FALSE]
 
+case_data%>%ggplot()+geom_boxplot(aes(as.character(`Diagnosis Result`), as.numeric(`Tumor Size (cm)`)))+
+  labs(title = 'Tumor Size (cm) in each Diagnosis Result')
+# 找出離群值
+case_data%>%filter(as.numeric(`Tumor Size (cm)`) > 10)
+case_data <- case_data%>%filter(as.numeric(`Tumor Size (cm)`) != 14)
+
 # Data split
 set.seed(123)
 train_ratio <- 0.8
@@ -103,13 +110,40 @@ model%>%compile(
   metrics = c('accuracy')
 )
 summary(model)
+# model to function
+model_func <- function() {
+  model <- keras_model_sequential()%>%
+    layer_dense(8, activation = 'relu', input_shape = c(9))%>%
+    layer_dense(8, activation = 'relu')%>%
+    layer_dense(8, activation = 'relu')%>%
+    layer_dense(2, activation = 'sigmoid')
+  model%>%compile(
+    optimizer = 'rmsprop',
+    loss = 'binary_crossentropy',
+    metrics = c('accuracy')
+  )
+  return(model)
+}
+model <- model_func()
+
 history <- model%>%fit(
   train_data, train_label, epochs = 20, batch_size =  10
 )
 plot(history)
 model%>%evaluate(test_data, test_label)
 
-# cross validation
+# 新增空資料表
+new_data <- data.frame(matrix(NA, nrow = 1, ncol = 9))
+for(i in colnames(data)){
+  # 如果欄位內有#則將該row放入新的資料表
+  print(data[i])
+  # if("#" %in% data[i]){
+  #   new_data <- rbind(new_data, data[i])
+  # }
+}
+
+
+# Cross validation
 k <- 5
 indices <- sample(1:nrow(train_data))
 folds <- cut(1:nrow(train_data), breaks = k, labels = FALSE)
@@ -123,16 +157,7 @@ for (i in 1:k) {
   val_data <- train_data[val_indices, ]
   val_label <- train_label[val_indices]
 
-  model <- keras_model_sequential()%>%
-    layer_dense(8, activation = 'relu', input_shape = c(9))%>%
-    layer_dense(8, activation = 'relu')%>%
-    layer_dense(2, activation = 'sigmoid')
-
-  model%>%compile(
-    optimizer = 'rmsprop',
-    loss = 'binary_crossentropy',
-    metrics = c('accuracy')
-  )
+  model <- model_func()
   history <- model%>%fit(
     train_data, train_label, epochs = num_epochs, batch_size =  10, verbose = 0
   )
