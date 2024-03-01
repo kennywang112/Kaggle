@@ -12,4 +12,4 @@
 
 5.  Dog & Cat classification and Grad-CAM plot. [link](https://www.kaggle.com/code/kennyssss/cats-dogs-cnn-with-r)
 
-6.  Brest cancer classification with neural network. [link](https:// "title")
+6.  Brest cancer classification with neural network. [link](https://www.kaggle.com/datasets/fatemehmehrparvar/breast-cancer-prediction)

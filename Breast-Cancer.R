@@ -4,7 +4,6 @@ library(tidyverse)
 library(reticulate)
 # install_tensorflow()
 
-data <- read_csv('C:/Users/USER/Desktop/KaggleData/breast-cancer-dataset.csv')%>%select(-`S/N`)
 data <- read_csv('../Kaggle_Data/breast-cancer-dataset.csv')%>%select(-`S/N`)
 data%>%colnames()
 data%>%head()
@@ -16,25 +15,41 @@ for (i in 1: ncol(data)) {
   print(data[,i]%>%unique())
 }
 # Data visualization
-data%>%group_by(`Diagnosis Result`)%>%summarize(count = n())%>%
+data%>%
+  group_by(`Diagnosis Result`)%>%
+  summarize(count = n())%>%
   ggplot()+geom_bar(aes(`Diagnosis Result`, count, fill = `Diagnosis Result`), stat = 'identity')+
   labs(title = 'Diagnosis Result')
-data%>%ggplot()+geom_bar(aes(Year, fill = `Diagnosis Result`), position = 'dodge')+
+data%>%
+  filter(Year != "#")%>%
+  ggplot()+geom_bar(aes(Year, fill = `Diagnosis Result`), position = 'dodge')+
   labs(title = 'Diagnosis Result in each Year')
-data%>%ggplot()+geom_bar(aes(Breast, fill = `Diagnosis Result`), position = 'dodge')+
+data%>%
+  filter(Breast != "#")%>%
+  ggplot()+geom_bar(aes(Breast, fill = `Diagnosis Result`), position = 'dodge')+
   labs(title = 'Diagnosis Result in each Breast')
-data%>%ggplot()+geom_bar(aes(`Breast Quadrant`, fill = `Diagnosis Result`), position = 'dodge')+
+data%>%
+  filter(`Breast Quadrant` != "#")%>%
+  ggplot()+geom_bar(aes(`Breast Quadrant`, fill = `Diagnosis Result`), position = 'dodge')+
   labs(title = 'Diagnosis Result in each Breast Quadrant')
 
-data%>%ggplot()+geom_density(aes(Age, fill = `Diagnosis Result`), alpha = 0.4)+
+data%>%
+  ggplot()+geom_density(aes(Age, fill = `Diagnosis Result`), alpha = 0.4)+
   labs(title = 'Diagnosis Result in each Age')
-data%>%ggplot()+geom_bar(aes(Menopause, fill = `Diagnosis Result`), position = 'dodge')+
+data%>%
+  ggplot()+geom_bar(aes(Menopause, fill = `Diagnosis Result`), position = 'dodge')+
   labs(title = 'Diagnosis Result in each Menopause')
-data%>%ggplot()+geom_bar(aes(`Inv-Nodes`, fill = `Diagnosis Result`), position = 'dodge')+
+data%>%
+  filter(`Inv-Nodes` != '#')%>%
+  ggplot()+geom_bar(aes(`Inv-Nodes`, fill = `Diagnosis Result`), position = 'dodge')+
   labs(title = 'Diagnosis Result in each Inv-Nodes')
-data%>%ggplot()+geom_bar(aes(Metastasis, fill = `Diagnosis Result`), position = 'dodge')+
+data%>%
+  filter(Metastasis != '#')%>%
+  ggplot()+geom_bar(aes(Metastasis, fill = `Diagnosis Result`), position = 'dodge')+
   labs(title = 'Diagnosis Result in each Metastasis')
-data%>%ggplot()+geom_bar(aes(History, fill = `Diagnosis Result`), position = 'dodge')+
+data%>%
+  filter(History != '#')%>%
+  ggplot()+geom_bar(aes(History, fill = `Diagnosis Result`), position = 'dodge')+
   labs(title = 'Diagnosis Result in each History')
 
 # Data Preprocessing
@@ -132,16 +147,22 @@ history <- model%>%fit(
 plot(history)
 model%>%evaluate(test_data, test_label)
 
-# 新增空資料表
-new_data <- data.frame(matrix(NA, nrow = 1, ncol = 9))
-for(i in colnames(data)){
-  # 如果欄位內有#則將該row放入新的資料表
-  print(data[i])
-  # if("#" %in% data[i]){
-  #   new_data <- rbind(new_data, data[i])
-  # }
-}
+indices_list <- list()
+for (i in colnames(data)) {
+  
+  indices <- grep("#", data[[i]])
+  print(indices)
 
+  if (length(indices) > 0) {
+    indices_list <- c(indices_list, list(indices))
+  }
+}
+all_unusual <- unlist(indices_list)%>%unique()
+unusual_data <- data.frame()
+for (i in all_unusual) {
+  unusual_data <- rbind(unusual_data, data[i, ])
+}
+unusual_data
 
 # Cross validation
 k <- 5
@@ -163,13 +184,18 @@ for (i in 1:k) {
   )
   results <- model%>%evaluate(test_data, test_label, verbose = 0)
   print(history)
-  all_scores <- c(all_scores, results[1])
+  all_scores <- c(all_scores, results[2])
   loss_history <- history$metrics$loss
   all_loss_histories <- rbind(all_loss_histories, loss_history)
 }
+all_scores%>%mean()
 
 avg_loss_history <- data.frame(
   epoch = seq(1, length(all_loss_histories)),
   validation_loss = apply(all_loss_histories, 2, mean)
 )
 avg_loss_history
+
+
+
+
