@@ -176,19 +176,22 @@ for (i in 1:k) {
   
   val_indices <- which(folds == i, arr.ind = TRUE)
   val_data <- train_data[val_indices, ]
-  val_label <- train_label[val_indices]
-
+  val_label <- train_label[val_indices, ]
+  
+  partial_train_data <- train_data[-val_indices, ]
+  partial_train_label <- train_label[-val_indices, ]
+  
   model <- model_func()
+  
   history <- model%>%fit(
-    train_data, train_label, epochs = num_epochs, batch_size =  10, verbose = 0
+    partial_train_data, partial_train_label, epochs = num_epochs, batch_size =  1, verbose = 0
   )
-  results <- model%>%evaluate(test_data, test_label, verbose = 0)
+  results <- model%>%evaluate(val_data, val_label, verbose = 0)
   print(history)
   all_scores <- c(all_scores, results[2])
   loss_history <- history$metrics$loss
   all_loss_histories <- rbind(all_loss_histories, loss_history)
 }
-all_scores%>%mean()
 
 avg_loss_history <- data.frame(
   epoch = seq(1, length(all_loss_histories)),
