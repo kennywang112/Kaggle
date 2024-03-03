@@ -4,6 +4,7 @@ library(arules)
 data <- read_csv("../Kaggle_Data/Groceries_dataset.csv")
 data%>%head()
 data%>%dim()
+data$itemDescription%>%unique()
 
 # Count all unique data that is more than 500
 data%>%group_by(itemDescription)%>%
@@ -14,6 +15,13 @@ data%>%group_by(itemDescription)%>%
 # Arrange the data by Member_number and then Date
 data <- data%>%arrange(Member_number, as.Date(Date, format = "%d-%m-%Y"))
 data
+data%>%group_by(Member_number)%>%summarise(n = n())%>%arrange(desc(n))
+data%>%mutate(Date = as.Date(Date, format = "%d-%m-%Y"))%>% 
+  mutate(Month = format(Date, "%Y-%m"))%>%
+  group_by(Month)%>%summarise(Transactions = n())%>%
+  ggplot(aes(Month, Transactions))+geom_col()+
+  coord_flip()
+
 # Loop to match unique itemDescription
 for (desc in data$itemDescription%>%unique()) {
   data[, desc] <- as.integer(data$itemDescription == desc)
@@ -25,7 +33,6 @@ new_data <- new_data%>%
   group_by(Member_number, Date)%>%
   summarise(across(everything(), sum))%>%
   arrange(Member_number, as.Date(Date, format = "%d-%m-%Y"))
-
 mt_data <- new_data[, -c(1, 2)]%>%as.matrix()
 mt_data
 
